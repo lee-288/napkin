@@ -13,7 +13,7 @@ import { version } from "../../package.json";
 export const runtime = "nodejs";
 
 // Hosts cache UI resources by URI. Bump this whenever you ship a widget change.
-const UI_VERSION = "9";
+const UI_VERSION = "10";
 const RESOURCE_URI = `ui://napkin/index.html?v=${UI_VERSION}`;
 
 // ---------------------------------------------------------------------------
