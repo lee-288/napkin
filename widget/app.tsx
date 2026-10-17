@@ -11,7 +11,7 @@ const NIB = 8;
 type Status = "drawing" | "sending" | "sent";
 
 export function Widget() {
-  const { connected, toolInput, hostCapabilities, hostContext } = useMcpApp();
+  const { app, connected, toolInput, hostCapabilities, hostContext } = useMcpApp();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const inkRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -25,6 +25,21 @@ export function Widget() {
   const brief = typeof toolInput?.brief === "string" ? toolInput.brief : null;
   const route = imageRoute(hostCapabilities);
   const canSubmit = hasInk && status === "drawing" && connected && route !== null;
+
+    const canFullscreen =
+    hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
+  const isFullscreen = hostContext?.displayMode === "fullscreen";
+
+  async function toggleFullscreen() {
+    if (!app) return;
+    try {
+      await app.requestDisplayMode({
+        mode: isFullscreen ? "inline" : "fullscreen",
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }
 
   // Runs again if the napkin turns, because setting the backing store's size
   // clears it and resets everything the context was holding.
@@ -183,6 +198,20 @@ export function Widget() {
             {brief ?? "Sketch something rough, then send it."}
           </p>
 
+          {connected && (
+            <button
+              onClick={toggleFullscreen}
+              disabled={!canFullscreen}
+              className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs text-zinc-700 ring-1 ring-zinc-900/10 disabled:opacity-50"
+            >
+              {!canFullscreen
+                ? "No full screen"
+                : isFullscreen
+                  ? "Exit full screen"
+                  : "Full screen"}
+            </button>
+          )}
+          
           {notice && status !== "sent" && (
             <p
               className={`absolute bottom-3 left-3 max-w-[70%] rounded-full bg-white/90 px-2.5 py-1 text-xs ring-1 ring-zinc-900/10 ${
