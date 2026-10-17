@@ -28,6 +28,8 @@ export function Widget() {
 
   // Runs again if the napkin turns, because setting the backing store's size
   // clears it and resets everything the context was holding.
+   // Runs again if the napkin turns, because setting the backing store's size
+  // clears it and resets everything the context was holding.
   useEffect(() => {
     const context = canvasRef.current?.getContext("2d");
     if (!context) return;
@@ -45,6 +47,19 @@ export function Widget() {
     inkRef.current = context;
   }, [napkin.pixels.width, napkin.pixels.height]);
 
+  // Stops the page from scrolling while a finger is on the canvas.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const stop = (e: TouchEvent) => e.preventDefault();
+    canvas.addEventListener("touchmove", stop, { passive: false });
+    document.documentElement.style.overscrollBehavior = "none";
+    return () => {
+      canvas.removeEventListener("touchmove", stop);
+      document.documentElement.style.overscrollBehavior = "";
+    };
+  }, []);
+  
   // Read the backing store off the element rather than from the layout, so the
   // pen lands where the cursor is however the host has scaled the paper.
   function pointFrom(event: React.PointerEvent<HTMLCanvasElement>) {
